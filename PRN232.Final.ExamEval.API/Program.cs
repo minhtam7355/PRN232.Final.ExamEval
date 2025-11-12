@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using PRN232.Final.ExamEval.Repositories.Entities;
 using PRN232.Final.ExamEval.Repositories.Persistence;
 using PRN232.Final.ExamEval.Services.Extensions;
 using System;
@@ -14,7 +15,7 @@ namespace PRN232.Final.ExamEval.API
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -83,6 +84,19 @@ namespace PRN232.Final.ExamEval.API
 
             builder.Services.ConfigureMapsters();
 
+            // ------------------------------ IDENTITY ------------------------------
+
+            builder.Services.AddIdentity<User, Role>(options =>
+            {
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequiredLength = 6;
+            }) 
+                .AddEntityFrameworkStores<AppDbContext>()
+                .AddDefaultTokenProviders(); // this ensures UserManager, RoleManager, SignInManager are registered
+
             // ------------------------------ JWT ------------------------------
 
             var jwtSection = builder.Configuration.GetSection("Jwt");
@@ -134,6 +148,15 @@ namespace PRN232.Final.ExamEval.API
             // ------------------------------ APP PIPELINE ------------------------------
 
             var app = builder.Build();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                await DbSeeder.SeedUsersAndRolesAsync(roleManager, userManager, context);
+            }
 
             if (app.Environment.IsDevelopment())
             {

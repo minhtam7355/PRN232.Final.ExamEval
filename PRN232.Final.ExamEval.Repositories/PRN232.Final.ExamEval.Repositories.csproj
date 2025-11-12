@@ -8,8 +8,6 @@
 
   <ItemGroup>
     <Folder Include="IRepositories\" />
-    <Folder Include="Configurations\" />
-    <Folder Include="Constants\" />
     <Folder Include="RequestFeatures\" />
     <Folder Include="Repositories\" />
     <Folder Include="RequestsAndResponses\Responses\" />
