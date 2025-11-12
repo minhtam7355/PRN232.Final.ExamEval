@@ -8,8 +8,6 @@
 
   <ItemGroup>
     <Folder Include="RequestFeatures\" />
-    <Folder Include="RequestsAndResponses\Responses\" />
-    <Folder Include="RequestsAndResponses\Requests\" />
   </ItemGroup>
 
 	<ItemGroup>

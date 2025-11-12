@@ -17,10 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\PRN232.Final.ExamEval.Repositories\PRN232.Final.ExamEval.Repositories.csproj" />
     <ProjectReference Include="..\PRN232.Final.ExamEval.Services\PRN232.Final.ExamEval.Services.csproj" />
   </ItemGroup>

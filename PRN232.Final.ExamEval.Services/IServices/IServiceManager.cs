@@ -8,5 +8,6 @@ namespace PRN232.Final.ExamEval.Services.IServices
 {
     public interface IServiceManager
     {
+        IAuthService AuthService { get; }
     }
 }
