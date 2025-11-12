@@ -5,8 +5,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PRN232.Final.ExamEval.Repositories.Entities;
+using PRN232.Final.ExamEval.Repositories.IRepositories;
 using PRN232.Final.ExamEval.Repositories.Persistence;
+using PRN232.Final.ExamEval.Repositories.Repositories;
 using PRN232.Final.ExamEval.Services.Extensions;
+using PRN232.Final.ExamEval.Services.IServices;
+using PRN232.Final.ExamEval.Services.Services;
 using System;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -78,7 +82,8 @@ namespace PRN232.Final.ExamEval.API
 
             // ------------------------------ INTERFACES ------------------------------
 
-            //            builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+            builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
+            builder.Services.AddScoped<IServiceManager, ServiceManager>();
 
             // ------------------------------ MAPSTERS ------------------------------
 

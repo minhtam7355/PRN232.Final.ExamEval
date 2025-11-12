@@ -7,9 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="IRepositories\" />
     <Folder Include="RequestFeatures\" />
-    <Folder Include="Repositories\" />
     <Folder Include="RequestsAndResponses\Responses\" />
     <Folder Include="RequestsAndResponses\Requests\" />
   </ItemGroup>
