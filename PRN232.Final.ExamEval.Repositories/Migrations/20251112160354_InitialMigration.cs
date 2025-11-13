@@ -84,6 +84,27 @@ namespace PRN232.Final.ExamEval.Repositories.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RoleClaim",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RoleClaim", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RoleClaim_Role_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "Role",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Exam",
                 columns: table => new
                 {
@@ -109,6 +130,27 @@ namespace PRN232.Final.ExamEval.Repositories.Migrations
                         principalTable: "Subject",
                         principalColumn: "SubjectId",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserClaim",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserClaim", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserClaim_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -383,6 +425,11 @@ namespace PRN232.Final.ExamEval.Repositories.Migrations
                 filter: "[NormalizedName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RoleClaim_RoleId",
+                table: "RoleClaim",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Rubric_ExamId",
                 table: "Rubric",
                 column: "ExamId");
@@ -415,6 +462,11 @@ namespace PRN232.Final.ExamEval.Repositories.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserClaim_UserId",
+                table: "UserClaim",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserLogin_UserId",
                 table: "UserLogin",
                 column: "UserId");
@@ -440,10 +492,16 @@ namespace PRN232.Final.ExamEval.Repositories.Migrations
                 name: "Grade");
 
             migrationBuilder.DropTable(
+                name: "RoleClaim");
+
+            migrationBuilder.DropTable(
                 name: "Rubric");
 
             migrationBuilder.DropTable(
                 name: "SubmissionImage");
+
+            migrationBuilder.DropTable(
+                name: "UserClaim");
 
             migrationBuilder.DropTable(
                 name: "UserLogin");

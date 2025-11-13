@@ -3,12 +3,6 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PRN232.Final.ExamEval.Repositories.Configurations;
 using PRN232.Final.ExamEval.Repositories.Entities;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PRN232.Final.ExamEval.Repositories.Persistence
 {
@@ -18,7 +12,7 @@ namespace PRN232.Final.ExamEval.Repositories.Persistence
         {
         }
 
-        // DbSets (match the entity files in your screenshot)
+        // DbSets
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Role> Roles { get; set; } = null!;
         public DbSet<UserProfile> UserProfiles { get; set; } = null!;
@@ -36,27 +30,24 @@ namespace PRN232.Final.ExamEval.Repositories.Persistence
         {
             base.OnModelCreating(modelBuilder);
 
-            // Identity table mappings (consistent with your examples)
+            // Map Identity table names
             modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogin");
             modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserToken");
             modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRole");
-            modelBuilder.Ignore<IdentityUserClaim<Guid>>();
-            modelBuilder.Ignore<IdentityRoleClaim<Guid>>();
+            modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaim");
+            modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaim");
 
-            // Apply entity configurations you have
+            // Apply configurations
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new RoleConfiguration());
             modelBuilder.ApplyConfiguration(new UserProfileConfiguration());
-
             modelBuilder.ApplyConfiguration(new SubjectConfiguration());
             modelBuilder.ApplyConfiguration(new SemesterConfiguration());
             modelBuilder.ApplyConfiguration(new ExamConfiguration());
             modelBuilder.ApplyConfiguration(new RubricConfiguration());
-
             modelBuilder.ApplyConfiguration(new SubmissionConfiguration());
             modelBuilder.ApplyConfiguration(new SubmissionImageConfiguration());
             modelBuilder.ApplyConfiguration(new ViolationConfiguration());
-
             modelBuilder.ApplyConfiguration(new GradeConfiguration());
             modelBuilder.ApplyConfiguration(new ExaminerAssignmentConfiguration());
         }
