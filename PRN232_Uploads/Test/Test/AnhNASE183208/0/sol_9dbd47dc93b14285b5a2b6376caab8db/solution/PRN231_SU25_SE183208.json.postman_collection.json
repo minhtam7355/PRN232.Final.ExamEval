@@ -1,0 +1,81 @@
+{
+	"info": {
+		"_postman_id": "ad331238-bfac-4f73-8161-7e73c06324e5",
+		"name": "PRN231_SU25_SE183208.json",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "36438394"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"admin@leopard.com\",\n  \"password\": \"@1\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{API_URL}}/api/auth",
+					"host": [
+						"{{API_URL}}"
+					],
+					"path": [
+						"api",
+						"auth"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwicm9sZSI6ImFkbWluIiwic2VjcmV0IjoiM2U5MGZlODAxOTg4ZDk0NzQxMTAwODJlNjg2YTI3YWZkM2E2NzdhZDZiNjI5ZWQ3MmY1MWRiYmUwYzIxM2MwMmVjODBhNGZjMTY3NTk1MmMzYmZkMjY0NjNlZWVmOWQzYzNmZDQwOTgwNTM1MzE4MjA4ZmU4NGZhOTEwMjY3NzA5OTU4MDI2N2Y5NTRlMWU0MGE3ZTVjOTc0YjBiNjRiMzI4MzE2NjE3ODVkOGY1ZTIyNTJlZDFmMmZlMTNlZDY1NjRmNmExNzQwYTM1NjQ2NmVjZjAzNmY3NDQ2NDc3MzEwNmY5ZjFjZTgxNTkxNzhlNWE0NTVhZjVjMDE3YjM5MGE3YzkwZWQwMTE2Zjg2MTM5ODUyOWVjMmJkM2U1YmE3NTRlMTY0YzgyMDQ0NmUwNTNhODA4YjMzN2U5ZTkzY2I1YTM5OGYyNjMzMzI4MWQ5ZjMzZGQ0OGZmYTE0MTEzNjVkZTM5NzhhMzBkNWZmNDVhNmE4NWU5MjdjMWVmOGQ5NmY5ZTkxMTUyZDFhYjk0NjUzNTFlZWE4MmFlODMxMzU3YzAxNTRmOTE3MzE1Nzk4MTU0MDdkZmUzN2Y2YmM1YjliODY4YzIxNDE0NDdhZDg3OGE2YzUwODM0YjliOTI0OTdhZGQ5ZTIzNzMyMTc3MmJkYmYwZmYxOTdhMjIzMWQwNzQzZWJlZGFmMWM1NjA4YzU5MDVmODZmOTNjOGI5YzZiNmRjYzU0ZWIxNzI5ZDM2ZDkxNTM4OGJkYTA3Zjc0MmVhZjY3ZTdkODUzNjhmODc1MDg4NmI4MjU3NWJmMDYzNzk5ZDAzYWIxOTg0ODYzYmM5NzUyY2ZkZGQxYWNjMTZhYjYzMDJlNTQwZGE0Zjg0OGNkMDMxNTc0MjJlODc5ODZhNjBlMmE3ZTc1Yjk3YzUxOTA4NTRjYmMzNDUyMTdkYWVmZGJkZGRkMjVkOWQwNTVkMjc2YzY0ODMxYjhkMmQyODViNTIxMTIzNmExOTUzNDFkMmE4NjYwODNhZDliMGFiZjQ0ZjA3ODRhNDIyYjc2Nzc0NTczYWQwNzAxNDc1ZWQ2NTI2OTFiZjY2YzRjODEyMzMxM2UzMTZjMWU0NThjNjI0NTFmMGMzODg2YjVkZWYyYjA2NjRlYTUzOGIxMTcyYjAyOGU5YzFmOTVkOWU2ZDNmNThhOTk4YmU5OTRmMzFiODE1Y2Y1Yjk0NmQyZTQzMmQ3OWMyMzk4YzczMzI5ZTZkZGEwNmNkMjRlM2E4MTZmOGE5Y2RjZWEzMzJiZDg4Y2I1NzhlYzU0MDk4MWVlMDY3OWNlYjdkMTRmMGQyZjJkOWEyMjZhMTVkNzhhY2M2ZDliNmUyYjYwNDRjOSIsImV4cCI6MTc1NTU3NDA3NywiaXNzIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NzA3NyIsImF1ZCI6Imh0dHBzOi8vbG9jYWxob3N0OjcwNzcifQ.xDgX4z3TEkYTPPANtlmVzyhYk3njlHVrdPtp-2Qf95g",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "API_URL",
+			"value": "https://localhost:7077",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwicm9sZSI6ImFkbWluIiwic2VjcmV0IjoiM2U5MGZlODAxOTg4ZDk0NzQxMTAwODJlNjg2YTI3YWZkM2E2NzdhZDZiNjI5ZWQ3MmY1MWRiYmUwYzIxM2MwMmVjODBhNGZjMTY3NTk1MmMzYmZkMjY0NjNlZWVmOWQzYzNmZDQwOTgwNTM1MzE4MjA4ZmU4NGZhOTEwMjY3NzA5OTU4MDI2N2Y5NTRlMWU0MGE3ZTVjOTc0YjBiNjRiMzI4MzE2NjE3ODVkOGY1ZTIyNTJlZDFmMmZlMTNlZDY1NjRmNmExNzQwYTM1NjQ2NmVjZjAzNmY3NDQ2NDc3MzEwNmY5ZjFjZTgxNTkxNzhlNWE0NTVhZjVjMDE3YjM5MGE3YzkwZWQwMTE2Zjg2MTM5ODUyOWVjMmJkM2U1YmE3NTRlMTY0YzgyMDQ0NmUwNTNhODA4YjMzN2U5ZTkzY2I1YTM5OGYyNjMzMzI4MWQ5ZjMzZGQ0OGZmYTE0MTEzNjVkZTM5NzhhMzBkNWZmNDVhNmE4NWU5MjdjMWVmOGQ5NmY5ZTkxMTUyZDFhYjk0NjUzNTFlZWE4MmFlODMxMzU3YzAxNTRmOTE3MzE1Nzk4MTU0MDdkZmUzN2Y2YmM1YjliODY4YzIxNDE0NDdhZDg3OGE2YzUwODM0YjliOTI0OTdhZGQ5ZTIzNzMyMTc3MmJkYmYwZmYxOTdhMjIzMWQwNzQzZWJlZGFmMWM1NjA4YzU5MDVmODZmOTNjOGI5YzZiNmRjYzU0ZWIxNzI5ZDM2ZDkxNTM4OGJkYTA3Zjc0MmVhZjY3ZTdkODUzNjhmODc1MDg4NmI4MjU3NWJmMDYzNzk5ZDAzYWIxOTg0ODYzYmM5NzUyY2ZkZGQxYWNjMTZhYjYzMDJlNTQwZGE0Zjg0OGNkMDMxNTc0MjJlODc5ODZhNjBlMmE3ZTc1Yjk3YzUxOTA4NTRjYmMzNDUyMTdkYWVmZGJkZGRkMjVkOWQwNTVkMjc2YzY0ODMxYjhkMmQyODViNTIxMTIzNmExOTUzNDFkMmE4NjYwODNhZDliMGFiZjQ0ZjA3ODRhNDIyYjc2Nzc0NTczYWQwNzAxNDc1ZWQ2NTI2OTFiZjY2YzRjODEyMzMxM2UzMTZjMWU0NThjNjI0NTFmMGMzODg2YjVkZWYyYjA2NjRlYTUzOGIxMTcyYjAyOGU5YzFmOTVkOWU2ZDNmNThhOTk4YmU5OTRmMzFiODE1Y2Y1Yjk0NmQyZTQzMmQ3OWMyMzk4YzczMzI5ZTZkZGEwNmNkMjRlM2E4MTZmOGE5Y2RjZWEzMzJiZDg4Y2I1NzhlYzU0MDk4MWVlMDY3OWNlYjdkMTRmMGQyZjJkOWEyMjZhMTVkNzhhY2M2ZDliNmUyYjYwNDRjOSIsImV4cCI6MTc1NTU3NDA3NywiaXNzIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NzA3NyIsImF1ZCI6Imh0dHBzOi8vbG9jYWxob3N0OjcwNzcifQ.xDgX4z3TEkYTPPANtlmVzyhYk3njlHVrdPtp-2Qf95g",
+			"type": "string"
+		}
+	]
+}

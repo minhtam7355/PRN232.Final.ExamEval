@@ -7,12 +7,25 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Extensions\Firebase\prn232finalexam-firebase-adminsdk-fbsvc-4caad4af9b.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Extensions\Firebase\prn232finalexam-firebase-adminsdk-fbsvc-4caad4af9b.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\PRN232.Final.ExamEval.Repositories\PRN232.Final.ExamEval.Repositories.csproj" />
   </ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
 		<PackageReference Include="Mapster" Version="7.4.0" />
 		<PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.17" />
+		<PackageReference Include="SharpCompress" Version="0.41.0" />
 	</ItemGroup>
 	
 </Project>

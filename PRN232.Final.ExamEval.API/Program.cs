@@ -1,4 +1,7 @@
+﻿using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
@@ -80,10 +83,39 @@ namespace PRN232.Final.ExamEval.API
                 });
             });
 
+            // ------------------------------ FIREBASE ------------------------------
+            // Lấy cấu hình Firebase từ appsettings.json
+            var firebaseConfig = builder.Configuration.GetSection("Firebase");
+            var relativePath = firebaseConfig["ServiceAccountPath"];
+            var serviceAccountPath = Path.Combine(AppContext.BaseDirectory, relativePath);
+
+            if (!File.Exists(serviceAccountPath))
+            {
+                throw new FileNotFoundException($"Không tìm thấy file Firebase JSON: {serviceAccountPath}");
+            }
+
+            if (FirebaseApp.DefaultInstance == null)
+            {
+                FirebaseApp.Create(new AppOptions()
+                {
+                    Credential = GoogleCredential.FromFile(serviceAccountPath)
+                });
+            }
+            Console.WriteLine("Current directory: " + Directory.GetCurrentDirectory());
+            Console.WriteLine("AppContext.BaseDirectory: " + AppContext.BaseDirectory);
+            Console.WriteLine("Full JSON path: " + serviceAccountPath);
+            Console.WriteLine("File exists: " + File.Exists(serviceAccountPath));
+
             // ------------------------------ INTERFACES ------------------------------
 
             builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
             builder.Services.AddScoped<IServiceManager, ServiceManager>();
+            builder.Services.AddScoped<IFileService>(sp =>
+                new FileService(
+                    firebaseDbUrl: firebaseConfig["DatabaseUrl"],
+                    serviceAccountPath: serviceAccountPath
+                ));
+
 
             // ------------------------------ MAPSTERS ------------------------------
 

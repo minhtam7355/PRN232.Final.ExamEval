@@ -1,0 +1,485 @@
+{
+	"info": {
+		"_postman_id": "b223ae7c-cb38-45f2-b632-068120b1dd3a",
+		"name": "PRN231_PE",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "32210278",
+		"_collection_link": "https://dora-dora.postman.co/workspace/reqrest~7bedfa51-e3d5-4102-bccd-bc31e9a177d0/collection/32210278-b223ae7c-cb38-45f2-b632-068120b1dd3a?action=share&source=collection_link&creator=32210278"
+	},
+	"item": [
+		{
+			"name": "Login_Success",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Login success - Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Login success - Save token to environment\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    if (jsonData.token) {\r",
+							"        pm.collectionVariables.set(\"bearerToken\", jsonData.token);\r",
+							"    }\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json;odata.metadata=minimal;odata.streaming=true"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"administrator@leopard.com\",\n  \"password\": \"@1\"\n}",
+					"options": {
+						"raw": {
+							"headerFamily": "json",
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/auth",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login_Failed",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Login failed - Status code is 400\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json;odata.metadata=minimal;odata.streaming=true"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"admin@handbagasian.org\",\n  \"password\": \"@21\"\n}",
+					"options": {
+						"raw": {
+							"headerFamily": "json",
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/auth",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Create  - Status code is 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Create \", function () {\r",
+							"    pm.expect(pm.collectionVariables.get(\"bearerToken\")).to.not.be.undefined;\r",
+							"    pm.expect(pm.collectionVariables.get(\"bearerToken\")).to.not.be.empty;\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Create \", function () {\r",
+							"    var authHeader = pm.request.headers.get(\"Authorization\");\r",
+							"    pm.expect(authHeader).to.include(\"Bearer\");\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json;odata.metadata=minimal;odata.streaming=true"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"leopardProfileId\": 0,\n  \"leopardTypeId\": 1,\n   \"leopardName\" : \"ABCDD\",\n  \"weight\": 16,\n  \"characteristics\": \"string\",\n  \"careNeeds\": \"string\",\n  \"modifiedDate\": \"2025-07-20T03:03:00.875Z\"\n}",
+					"options": {
+						"raw": {
+							"headerFamily": "json",
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/LeopardProfile",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"LeopardProfile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Update  - Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Update  - Request has authorization\", function () {\r",
+							"    var authHeader = pm.request.headers.get(\"Authorization\");\r",
+							"    pm.expect(authHeader).to.include(\"Bearer\");\r",
+							"    pm.expect(pm.collectionVariables.get(\"bearerToken\")).to.not.be.empty;\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json;odata.metadata=minimal;odata.streaming=true"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"leopardProfileId\": 0,\n  \"leopardTypeId\": 1,\n   \"leopardName\" : \"ABCDD\",\n  \"weight\": 16,\n  \"characteristics\": \"string\",\n  \"careNeeds\": \"ABC\",\n  \"modifiedDate\": \"2025-07-20T03:03:00.875Z\"\n}",
+					"options": {
+						"raw": {
+							"headerFamily": "json",
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/LeopardProfile/13",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"LeopardProfile",
+						"13"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetAll",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Get list - Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Get list - Response is an array\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.be.an('array');\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json;odata.metadata=minimal;odata.streaming=true"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/LeopardProfile",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"LeopardProfile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetById",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Get by ID - Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json;odata.metadata=minimal;odata.streaming=true"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/LeopardProfile/1",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"LeopardProfile",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Delete - Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Delete - Request has authorization\", function () {\r",
+							"    var authHeader = pm.request.headers.get(\"Authorization\");\r",
+							"    pm.expect(authHeader).to.include(\"Bearer\");\r",
+							"    pm.expect(pm.collectionVariables.get(\"bearerToken\")).to.not.be.empty;\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json;odata.metadata=minimal;odata.streaming=true"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/LeopardProfile/1",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"LeopardProfile",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{bearerToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://localhost:7275"
+		},
+		{
+			"key": "bearerToken",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
