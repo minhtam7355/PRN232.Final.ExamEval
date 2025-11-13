@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using PRN232.Final.ExamEval.API.Hubs;
 using PRN232.Final.ExamEval.Repositories.Entities;
 using PRN232.Final.ExamEval.Repositories.IRepositories;
 using PRN232.Final.ExamEval.Repositories.Persistence;
@@ -84,6 +85,21 @@ namespace PRN232.Final.ExamEval.API
 
             builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
             builder.Services.AddScoped<IServiceManager, ServiceManager>();
+            builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
+            builder.Services.AddScoped<ISubjectService, SubjectService>();
+            builder.Services.AddScoped<ISemesterRepository, SemesterRepository>();
+            builder.Services.AddScoped<ISemesterService, SemesterService>();
+            builder.Services.AddScoped<IExamRepository, ExamRepository>();
+            builder.Services.AddScoped<IExamService, ExamService>();
+            builder.Services.AddScoped<IRubricRepository, RubricRepository>();
+            builder.Services.AddScoped<IRubricService, RubricService>();
+            builder.Services.AddScoped<IExaminerAssignmentRepository, ExaminerAssignmentRepository>();
+            builder.Services.AddScoped<IExaminerAssignmentService, ExaminerAssignmentService>();
+            builder.Services.AddScoped<IGradeRepository, GradeRepository>();
+            builder.Services.AddScoped<IGradeService, GradeService>();
+            builder.Services.AddScoped<ISubmissionForStudentRepository, SubmissionForStudentRepository>();
+            builder.Services.AddScoped<ISubmissionForStudentService, SubmissionForStudentService>();
+
 
             // ------------------------------ MAPSTERS ------------------------------
 
@@ -133,6 +149,19 @@ namespace PRN232.Final.ExamEval.API
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
                 };
+                options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/notification"))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
             // ------------------------------ AUTHORIZATION POLICIES ------------------------------
@@ -147,7 +176,18 @@ namespace PRN232.Final.ExamEval.API
                 options.AddPolicy("ReadOnly", policy =>
                     policy.RequireRole("administrator", "moderator", "examiner", "student"));
             });
-
+            //-------------------------------SIGNALR + CORS------------------------------------
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .SetIsOriginAllowed(_ => true)
+                          .AllowCredentials();
+                });
+            });
+            builder.Services.AddSignalR();
 
 
             // ====================================================================================================
@@ -171,9 +211,11 @@ namespace PRN232.Final.ExamEval.API
             }
 
             app.UseRouting();
+            app.UseCors("AllowAll");
             app.UseAuthentication();
             app.UseAuthorization();
 
+            app.MapHub<NotificationHub>("/hubs/notification");
             app.MapControllers();
 
             app.Run();
