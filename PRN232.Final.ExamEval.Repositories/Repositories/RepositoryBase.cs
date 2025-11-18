@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace PRN232.Final.ExamEval.Repositories.Repositories
 {
-    internal abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
+    public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
     {
         protected AppDbContext AppDbContext;
         public RepositoryBase(AppDbContext appDbContext)

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using PRN232.Final.ExamEval.Repositories.IRepositories;
 using PRN232.Final.ExamEval.Repositories.Persistence;
 using System;
@@ -13,6 +14,11 @@ namespace PRN232.Final.ExamEval.Repositories.Repositories
     public sealed class RepositoryManager : IRepositoryManager
     {
         private readonly AppDbContext appDbContext;
+
+        public RepositoryManager(AppDbContext context)
+        {
+            appDbContext = context;
+        }
 
         public async Task<IDbTransaction> BeginTransaction(CancellationToken ct = default)
         {

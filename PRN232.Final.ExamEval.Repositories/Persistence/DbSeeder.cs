@@ -1,10 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using PRN232.Final.ExamEval.Repositories.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PRN232.Final.ExamEval.Repositories.Persistence
 {
@@ -13,7 +8,7 @@ namespace PRN232.Final.ExamEval.Repositories.Persistence
         public static async Task SeedUsersAndRolesAsync(
             RoleManager<Role> roleManager,
             UserManager<User> userManager,
-            AppDbContext context) // inject DbContext here
+            AppDbContext context)
         {
             // ------------------------- Seed Roles -------------------------
             var roles = new[]
@@ -85,9 +80,64 @@ namespace PRN232.Final.ExamEval.Repositories.Persistence
             foreach (var profile in profiles)
             {
                 if (!context.UserProfiles.Any(up => up.UserId == profile.UserId))
-                {
                     context.UserProfiles.Add(profile);
-                }
+            }
+
+            // ============================================================
+            // ========== SEED SUBJECTS (NO ID, DB GENERATES ID) ===========
+            // ============================================================
+
+            if (!context.Subjects.Any())
+            {
+                context.Subjects.AddRange(new[]
+                {
+                    new Subject { Name = "C# Programming", Description = "Object-oriented programming in C#" },
+                    new Subject { Name = "Database Systems", Description = "SQL, normalization, ERD" },
+                    new Subject { Name = "Web Development with Java", Description = "Servlets, JSP, Spring" },
+                    new Subject { Name = "Cloud Computing", Description = "AWS, Azure fundamentals" }
+                });
+            }
+
+            // ============================================================
+            // ========== SEED SEMESTERS (NO ID, DB GENERATES ID) ==========
+            // ============================================================
+
+            if (!context.Semesters.Any())
+            {
+                context.Semesters.AddRange(new[]
+                {
+                    new Semester { Name = "Fall 2025", StartDate = DateTime.Parse("2025-08-20"), EndDate = DateTime.Parse("2025-12-20") },
+                    new Semester { Name = "Spring 2026", StartDate = DateTime.Parse("2026-01-05"), EndDate = DateTime.Parse("2026-05-20") }
+                });
+            }
+
+            await context.SaveChangesAsync();  // SAVE BEFORE SEEDING EXAMS
+
+            // ============================================================
+            // ========== GET GENERATED IDs FOR FK USE =====================
+            // ============================================================
+
+            var cs = context.Subjects.First(s => s.Name == "C# Programming").SubjectId;
+            var db = context.Subjects.First(s => s.Name == "Database Systems").SubjectId;
+            var java = context.Subjects.First(s => s.Name == "Web Development with Java").SubjectId;
+            var cloud = context.Subjects.First(s => s.Name == "Cloud Computing").SubjectId;
+
+            var fall = context.Semesters.First(s => s.Name == "Fall 2025").SemesterId;
+            var spring = context.Semesters.First(s => s.Name == "Spring 2026").SemesterId;
+
+            // ============================================================
+            // ===================== SEED EXAMS ============================
+            // ============================================================
+
+            if (!context.Exams.Any())
+            {
+                context.Exams.AddRange(new[]
+                {
+                    new Exam { Name = "C# OOP Midterm", ExamDate = DateTime.Parse("2025-10-10"), SubjectId = cs, SemesterId = fall },
+                    new Exam { Name = "Database Final", ExamDate = DateTime.Parse("2025-12-15"), SubjectId = db, SemesterId = fall },
+                    new Exam { Name = "Java Web Assignment", ExamDate = DateTime.Parse("2026-03-12"), SubjectId = java, SemesterId = spring },
+                    new Exam { Name = "Cloud Computing Final", ExamDate = DateTime.Parse("2026-05-10"), SubjectId = cloud, SemesterId = spring }
+                });
             }
 
             await context.SaveChangesAsync();

@@ -37,7 +37,7 @@ namespace PRN232.Final.ExamEval.API.Controllers
                 Expires = tokenResponse.RefreshTokenExpiry
             });
 
-            return Ok(tokenResponse.AccessToken);
+            return Ok(new { token = tokenResponse.AccessToken });
         }
 
         [HttpPost("refresh-token")]
@@ -62,7 +62,7 @@ namespace PRN232.Final.ExamEval.API.Controllers
                     Expires = tokenResponse.RefreshTokenExpiry
                 });
 
-                return Ok(tokenResponse.AccessToken);
+                return Ok(new { token = tokenResponse.AccessToken });
             }
             catch (SecurityTokenException)
             {

@@ -1,3 +1,4 @@
+using CloudinaryDotNet;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.OData;
@@ -11,7 +12,6 @@ using PRN232.Final.ExamEval.Repositories.Repositories;
 using PRN232.Final.ExamEval.Services.Extensions;
 using PRN232.Final.ExamEval.Services.IServices;
 using PRN232.Final.ExamEval.Services.Services;
-using System;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -27,6 +27,17 @@ namespace PRN232.Final.ExamEval.API
 
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
+
+            // ------------------------------ Cloudinary Config ------------------------------
+            var cloudConfig = builder.Configuration.GetSection("Cloudinary");
+            var account = new Account(
+                cloudConfig["CloudName"],
+                cloudConfig["ApiKey"],
+                cloudConfig["ApiSecret"]
+            );
+
+            builder.Services.AddSingleton(new Cloudinary(account));
+
 
             // ------------------------------ SERVICES ------------------------------
 
@@ -84,10 +95,18 @@ namespace PRN232.Final.ExamEval.API
 
             builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
             builder.Services.AddScoped<IServiceManager, ServiceManager>();
+            builder.Services.AddScoped<ISubmissionRepository, SubmissionRepository>();
+            builder.Services.AddScoped<ISubmissionImageRepository, SubmissionImageRepository>();
+            builder.Services.AddScoped<ISubmissionService, SubmissionService>();
+            builder.Services.AddScoped<ISubmissionImageService, SubmissionImageService>();
+
 
             // ------------------------------ MAPSTERS ------------------------------
 
             builder.Services.ConfigureMapsters();
+
+            // ------------------------------ CORS ------------------------------
+            builder.Services.AddCors();
 
             // ------------------------------ IDENTITY ------------------------------
 
@@ -173,6 +192,14 @@ namespace PRN232.Final.ExamEval.API
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseCors(builder =>
+            {
+                builder
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyOrigin();
+            });
 
             app.MapControllers();
 
