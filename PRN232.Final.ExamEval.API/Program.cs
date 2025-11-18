@@ -14,6 +14,7 @@ using PRN232.Final.ExamEval.Services.IServices;
 using PRN232.Final.ExamEval.Services.Services;
 using System.Text;
 using System.Text.Json.Serialization;
+using SubmitionsChecker;
 
 namespace PRN232.Final.ExamEval.API
 {
@@ -100,6 +101,9 @@ namespace PRN232.Final.ExamEval.API
             builder.Services.AddScoped<ISubmissionService, SubmissionService>();
             builder.Services.AddScoped<ISubmissionImageService, SubmissionImageService>();
 
+
+            // Register submission processor (MOSS disabled temporarily)
+            builder.Services.AddScoped<SubmissionProcessor>();
 
             // ------------------------------ MAPSTERS ------------------------------
 

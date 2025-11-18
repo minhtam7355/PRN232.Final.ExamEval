@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.11.35312.102
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11205.157 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PRN232.Final.ExamEval.API", "PRN232.Final.ExamEval.API\PRN232.Final.ExamEval.API.csproj", "{20B62BD2-348E-4389-81D8-390BE4A745CA}"
 EndProject
@@ -10,6 +10,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PRN232.Final.ExamEval.Services", "PRN232.Final.ExamEval.Services\PRN232.Final.ExamEval.Services.csproj", "{76B417F7-8BC1-40B2-95FF-A38DD65E7F57}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PRN232.Final.ExamEval.FE", "PRN232.Final.ExamEval.FE\PRN232.Final.ExamEval.FE.csproj", "{D8FBCD20-C9BC-44BE-A8F9-BBC398B81540}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SubmitionsChecker", "SubmitionsChecker\SubmitionsChecker.csproj", "{844F384C-896F-44E3-A17A-4BFED65671A8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +34,10 @@ Global
 		{D8FBCD20-C9BC-44BE-A8F9-BBC398B81540}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8FBCD20-C9BC-44BE-A8F9-BBC398B81540}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D8FBCD20-C9BC-44BE-A8F9-BBC398B81540}.Release|Any CPU.Build.0 = Release|Any CPU
+		{844F384C-896F-44E3-A17A-4BFED65671A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{844F384C-896F-44E3-A17A-4BFED65671A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{844F384C-896F-44E3-A17A-4BFED65671A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{844F384C-896F-44E3-A17A-4BFED65671A8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

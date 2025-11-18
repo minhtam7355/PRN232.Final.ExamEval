@@ -1,0 +1,118 @@
+﻿1. Nhận file RAR và giải nén
+
+File input: *.rar
+
+Giải nén thành cấu trúc như trên.
+
+Mỗi thư mục ở cấp 1 tương ứng 1 sinh viên.
+
+2. Duyệt thư mục sinh viên (Level 1 folders)
+
+Lấy danh sách thư mục sinh viên:
+
+AnhNASE183208/
+
+DuyPNSE173520/
+
+HUNGNPSE172907/
+
+Tên folder = tên sinh viên → dùng để kiểm tra format MSSV (violation nếu sai).
+
+3. Kiểm tra cấu trúc bên trong từng sinh viên
+
+Bên trong mỗi sinh viên luôn có:
+
+Thư mục 0/
+
+File history.dat
+
+File nộp thật nằm tại: 0/solution.zip
+
+👉 Hướng xử lý:
+
+3.1. Kiểm tra thư mục 0
+
+Phải tồn tại
+
+Bên trong phải có file solution.zip
+
+Nếu thiếu → tạo violation MissingSolutionFile
+
+3.2. Bỏ qua file history.dat
+
+Đây là file log tự sinh bởi hệ thống nộp bài (ví dụ: FPT, Codelearn,…)
+
+Không dùng để chấm hoặc kiểm tra đạo văn
+
+Không upload backend
+
+4. Giải nén solution.zip để lấy bài làm
+
+Với mỗi sinh viên:
+
+/AnhNASE183208/0/solution.zip → extract → WorkDir/AnhNASE183208/
+
+
+Sau khi extract, bạn sẽ có:
+
+File .cs
+
+Folder BLL, DAL, DTO (nếu có)
+
+File Word .docx
+
+Hoặc các file khác sinh viên nộp
+
+👉 Đây mới là bài chính cần xử lý
+
+5. Chuẩn hoá bài làm sau khi extract
+
+Áp dụng normalization:
+
+5.1. Với file C#
+
+Bỏ comment
+
+Bỏ using
+
+Gom toàn bộ .cs thành 1 file text
+
+Lowercase + loại bỏ whitespace thừa
+
+Lưu thành:
+Normalized/AnhNASE183208.txt
+
+5.2. Với file Word
+
+Extract text
+
+Extract images
+
+Chuẩn hoá văn bản giống trên
+
+5.3. File rác cần bỏ qua
+
+.dll
+
+.exe
+
+.zip phụ
+
+bin/, obj/, .designer.cs, .g.cs
+
+history.dat (đã nói ở trên)
+
+6. Kiểm tra vi phạm (Violation Scanning)
+6.1. Vi phạm tên thư mục
+
+AnhNASE183208 phải khớp MSSV → kiểm tra pattern SE\d+
+
+Nếu sai → WrongFolderName
+
+6.2. Vi phạm file
+
+Thiếu file chính (VD: không có Program.cs)
+
+Thư mục cấu trúc không đúng (nếu đề yêu cầu 3 lớp)
+
+File Word nhưng không có ảnh (nếu đề yêu cầu)

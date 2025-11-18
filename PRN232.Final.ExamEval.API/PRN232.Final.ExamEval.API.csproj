@@ -16,11 +16,13 @@
     </PackageReference>
     <PackageReference Include="SharpCompress" Version="0.41.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="SharpCompress" Version="0.32.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\PRN232.Final.ExamEval.Repositories\PRN232.Final.ExamEval.Repositories.csproj" />
     <ProjectReference Include="..\PRN232.Final.ExamEval.Services\PRN232.Final.ExamEval.Services.csproj" />
+    <ProjectReference Include="..\SubmitionsChecker\SubmitionsChecker.csproj" />
   </ItemGroup>
 
 </Project>
