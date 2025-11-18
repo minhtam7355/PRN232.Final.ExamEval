@@ -15,6 +15,9 @@ using PRN232.Final.ExamEval.Services.Services;
 using System.Text;
 using System.Text.Json.Serialization;
 using SubmitionsChecker;
+using Microsoft.AspNetCore.Http;
+using PRN232.Final.ExamEval.API.Swagger;
+using PRN232.Final.ExamEval.API.Services;
 
 namespace PRN232.Final.ExamEval.API
 {
@@ -83,13 +86,22 @@ namespace PRN232.Final.ExamEval.API
                         Array.Empty<string>()
                     }
                 });
-
+                // Support non-nullable reference types and map IFormFile to binary for file upload UI
+                c.SupportNonNullableReferenceTypes();
+                c.MapType<IFormFile>(() => new Microsoft.OpenApi.Models.OpenApiSchema
+                {
+                    Type = "string",
+                    Format = "binary"
+                });
                 c.MapType<DateOnly>(() => new Microsoft.OpenApi.Models.OpenApiSchema
                 {
                     Type = "string",
                     Format = "date",
                     Example = new Microsoft.OpenApi.Any.OpenApiString("2025-01-01")
                 });
+
+                // add operation filter for file upload
+                c.OperationFilter<FileUploadOperationFilter>();
             });
 
             // ------------------------------ INTERFACES ------------------------------
@@ -104,6 +116,11 @@ namespace PRN232.Final.ExamEval.API
 
             // Register submission processor (MOSS disabled temporarily)
             builder.Services.AddScoped<SubmissionProcessor>();
+
+            // ------------------------------ SIGNALR & PROGRESS TRACKING ------------------------------
+            
+            builder.Services.AddSignalR();
+            builder.Services.AddSingleton<IProgressTrackerService, ProgressTrackerService>();
 
             // ------------------------------ MAPSTERS ------------------------------
 
@@ -202,10 +219,11 @@ namespace PRN232.Final.ExamEval.API
                 builder
                 .AllowAnyOrigin()
                 .AllowAnyMethod()
-                .AllowAnyOrigin();
+                .AllowAnyHeader();
             });
 
             app.MapControllers();
+            app.MapHub<PRN232.Final.ExamEval.API.Hubs.SubmissionProgressHub>("/hubs/progress");
 
             app.Run();
         }

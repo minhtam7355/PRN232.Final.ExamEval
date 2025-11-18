@@ -1,0 +1,132 @@
+{
+  "Timestamp": "20251118103045",
+  "SavedArchive": "/path/to/SubmissionPipeline/20251118103045_submissions.zip",
+  "ExtractedRoot": "/path/to/SubmissionPipeline/20251118103045_submissions",
+  "NormalizedOutput": "/path/to/SubmissionPipeline/20251118103045_submissions/Normalized",
+  "Summary": {
+    "TotalStudents": 35,
+    "Passed": 28,
+    "Warning": 4,
+    "Failed": 3,
+    "SuccessRate": 80.0
+  },
+  "Students": [
+    {
+      "StudentId": "AnhNASE183208",
+      "Status": "✅ PASSED",
+      "HasNormalizedFile": true,
+      "NormalizedFilePath": "/path/to/Normalized/AnhNASE183208.txt",
+      "IssueCount": 0,
+      "Issues": []
+    },
+    {
+      "StudentId": "anhpqse185118",
+      "Status": "✅ PASSED",
+      "HasNormalizedFile": true,
+      "NormalizedFilePath": "/path/to/Normalized/anhpqse185118.txt",
+      "IssueCount": 0,
+      "Issues": []
+    },
+    {
+      "StudentId": "chinlse171121",
+      "Status": "⚠️ WARNING - Build Failed",
+      "HasNormalizedFile": true,
+      "NormalizedFilePath": "/path/to/Normalized/chinlse171121.txt",
+      "IssueCount": 1,
+      "Issues": [
+        {
+          "Type": "BuildFailed",
+          "Description": "Build failed: CS0246: The type or namespace name 'EntityFramework' could not be found"
+        }
+      ]
+    },
+    {
+      "StudentId": "datnqse173081",
+      "Status": "✅ PASSED",
+      "HasNormalizedFile": true,
+      "NormalizedFilePath": "/path/to/Normalized/datnqse173081.txt",
+      "IssueCount": 0,
+      "Issues": []
+    },
+    {
+      "StudentId": "DuyPNSE173520",
+      "Status": "❌ FAILED - Missing Files",
+      "HasNormalizedFile": false,
+      "NormalizedFilePath": null,
+      "IssueCount": 1,
+      "Issues": [
+        {
+          "Type": "MissingSolutionFile",
+          "Description": "Missing solution.zip in 0/"
+        }
+      ]
+    },
+    {
+      "StudentId": "hantkse173344",
+      "Status": "✅ PASSED",
+      "HasNormalizedFile": true,
+      "NormalizedFilePath": "/path/to/Normalized/hantkse173344.txt",
+      "IssueCount": 0,
+      "Issues": []
+    },
+    {
+      "StudentId": "hoangtmse172926",
+      "Status": "⚠️ WARNING - Build Failed",
+      "HasNormalizedFile": true,
+      "NormalizedFilePath": "/path/to/Normalized/hoangtmse172926.txt",
+      "IssueCount": 2,
+      "Issues": [
+        {
+          "Type": "BuildFailed",
+          "Description": "Build failed: Package restore failed"
+        },
+        {
+          "Type": "WrongFolderName",
+          "Description": "Folder name must contain SE followed by 6 digits (e.g. SE123456)"
+        }
+      ]
+    },
+    {
+      "StudentId": "HungDMSE173190",
+      "Status": "✅ PASSED",
+      "HasNormalizedFile": true,
+      "NormalizedFilePath": "/path/to/Normalized/HungDMSE173190.txt",
+      "IssueCount": 0,
+      "Issues": []
+    },
+    {
+      "StudentId": "hungnpse170107",
+      "Status": "✅ PASSED",
+      "HasNormalizedFile": true,
+      "NormalizedFilePath": "/path/to/Normalized/hungnpse170107.txt",
+      "IssueCount": 0,
+      "Issues": []
+    },
+    {
+      "StudentId": "HUNGNPSE172907",
+      "Status": "✅ PASSED",
+      "HasNormalizedFile": true,
+      "NormalizedFilePath": "/path/to/Normalized/HUNGNPSE172907.txt",
+      "IssueCount": 0,
+      "Issues": []
+    },
+    {
+      "StudentId": "huydqse183078",
+      "Status": "❌ FAILED - No output",
+      "HasNormalizedFile": false,
+      "NormalizedFilePath": null,
+      "IssueCount": 2,
+      "Issues": [
+        {
+          "Type": "MissingSolutionFile",
+          "Description": "Missing folder '0'"
+        },
+        {
+          "Type": "WrongFolderName",
+          "Description": "Folder name must contain SE followed by 6 digits (e.g. SE123456)"
+        }
+      ]
+    }
+  ]
+}
+
