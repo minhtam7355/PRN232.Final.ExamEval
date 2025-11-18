@@ -54,9 +54,29 @@ namespace PRN232.Final.ExamEval.API.Controllers
 
             _logger.LogInformation("Saved uploaded archive to {Path}", savedPath);
 
-            var folderId = Path.GetFileNameWithoutExtension(savedPath); // timestamp_filename
+            var folderId = Path.GetFileNameWithoutExtension(savedPath);
             var extractedRootDir = Path.Combine(baseRoot, folderId);
             Directory.CreateDirectory(extractedRootDir);
+
+            // Check if job can start or needs to be queued
+            var (canStart, queuePosition) = await _progressTracker.TryStartJob(folderId);
+
+            if (!canStart)
+            {
+                // Job is queued
+                _logger.LogInformation("Job {FolderId} queued at position {Position}", folderId, queuePosition);
+                return Accepted(new
+                {
+                    folderId,
+                    status = "queued",
+                    queuePosition,
+                    message = $"Upload accepted. Your job is queued at position {queuePosition}. Please wait for processing to start.",
+                    signalRHub = "/hubs/progress"
+                });
+            }
+
+            // Job can start immediately
+            _logger.LogInformation("Job {FolderId} starting immediately", folderId);
 
             // Start background processing
             _ = Task.Run(async () =>
@@ -147,7 +167,6 @@ namespace PRN232.Final.ExamEval.API.Controllers
                                 studentProgress.Error
                             );
 
-                            // Add violations to tracking
                             if (studentProgress.Violations != null)
                             {
                                 foreach (var violation in studentProgress.Violations)
@@ -240,28 +259,27 @@ namespace PRN232.Final.ExamEval.API.Controllers
 
                     var report = new
                     {
-                        Timestamp = timestamp,
-                        SavedArchive = savedPath,
-                        ExtractedRoot = extractedRootDir,
-                        NormalizedOutput = normalizedOut,
-                        Summary = new
+                        timestamp = timestamp,
+                        savedArchive = savedPath,
+                        extractedRoot = extractedRootDir,
+                        normalizedOutput = normalizedOut,
+                        summary = new
                         {
-                            TotalStudents = studentReports.Count,
-                            Passed = passedCount,
-                            Warning = warningCount,
-                            Failed = failedCount,
-                            SuccessRate = studentReports.Count > 0 
+                            totalStudents = studentReports.Count,
+                            passed = passedCount,
+                            warning = warningCount,
+                            failed = failedCount,
+                            successRate = studentReports.Count > 0 
                                 ? Math.Round((passedCount * 100.0) / studentReports.Count, 2) 
                                 : 0
                         },
-                        Students = studentReports
+                        students = studentReports
                     };
 
                     var reportPath = Path.Combine(extractedRootDir, "report.json");
                     var reportJson = JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true });
                     await System.IO.File.WriteAllTextAsync(reportPath, reportJson);
 
-                    // Complete job
                     await _progressTracker.CompleteJob(folderId, true);
                 }
                 catch (Exception ex)
@@ -271,12 +289,38 @@ namespace PRN232.Final.ExamEval.API.Controllers
                 }
             });
 
-            // return immediate response with folder id
             return Accepted(new 
             { 
                 folderId, 
+                status = "processing",
+                queuePosition = 0,
                 message = "Upload accepted. Processing started.",
                 signalRHub = "/hubs/progress" 
+            });
+        }
+
+        /// <summary>
+        /// Get queue status and all jobs
+        /// </summary>
+        [HttpGet("queue")]
+        public async Task<IActionResult> GetQueue()
+        {
+            var allJobs = await _progressTracker.GetAllJobs();
+            var queueLength = _progressTracker.GetQueueLength();
+
+            return Ok(new
+            {
+                queueLength,
+                jobs = allJobs.Select(j => new
+                {
+                    j.FolderId,
+                    j.Status,
+                    j.QueuePosition,
+                    j.StartedAt,
+                    j.Total,
+                    j.Completed,
+                    j.PercentComplete
+                })
             });
         }
 

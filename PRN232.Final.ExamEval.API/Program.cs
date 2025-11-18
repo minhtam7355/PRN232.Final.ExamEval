@@ -127,7 +127,16 @@ namespace PRN232.Final.ExamEval.API
             builder.Services.ConfigureMapsters();
 
             // ------------------------------ CORS ------------------------------
-            builder.Services.AddCors();
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.SetIsOriginAllowed(_ => true) // Allow any origin
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials();
+                });
+            });
 
             // ------------------------------ IDENTITY ------------------------------
 
@@ -214,13 +223,7 @@ namespace PRN232.Final.ExamEval.API
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseCors(builder =>
-            {
-                builder
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader();
-            });
+            app.UseCors("AllowAll");
 
             app.MapControllers();
             app.MapHub<PRN232.Final.ExamEval.API.Hubs.SubmissionProgressHub>("/hubs/progress");
