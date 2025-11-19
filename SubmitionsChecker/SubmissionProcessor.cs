@@ -24,7 +24,7 @@ namespace SubmitionsChecker
 
     public record ProcessingProgress(int Total, int Completed, int Failed, string? CurrentStudent = null);
 
-    public record StudentProgress(string StudentName, string Status, string? Error = null, List<string> Violations = null);
+    public record StudentProgress(string StudentName, string Status, string? Error = null, List<string>? Violations = null);
 
     public class SubmissionProcessor
     {
@@ -169,6 +169,10 @@ namespace SubmitionsChecker
 
                             ZipFile.ExtractToDirectory(solutionZip, extractTo);
                             _logger?.LogInformation("Extracted inner solution {Zip} to {Path}", solutionZip, extractTo);
+                            
+                            // Log the directory structure for debugging
+                            _logger?.LogDebug("Directory structure after extraction:");
+                            LogDirectoryTree(extractTo, 0, 3); // Log up to 3 levels deep
                         }
                         catch (Exception ex)
                         {
@@ -200,18 +204,110 @@ namespace SubmitionsChecker
                             _logger?.LogInformation("Build succeeded for {Folder}", folderName);
                         }
 
-                        // Collect C# files while ignoring trash
-                        var csFiles = Directory.GetFiles(extractTo, "*.cs", SearchOption.AllDirectories)
-                            .Where(f => !f.EndsWith(".designer.cs", StringComparison.OrdinalIgnoreCase)
-                                        && !f.EndsWith(".g.cs", StringComparison.OrdinalIgnoreCase)
-                                        && !f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar)
-                                        && !f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar))
+                        // Collect C# files while ignoring build/config folders
+                        _logger?.LogInformation("Scanning for .cs files in: {Path}", extractTo);
+                        var allCsFiles = Directory.GetFiles(extractTo, "*.cs", SearchOption.AllDirectories);
+                        _logger?.LogInformation("{Folder} -> found {Count} total .cs files before filtering", folderName, allCsFiles.Length);
+                        
+                        // Log all found files for debugging
+                        if (allCsFiles.Length > 0)
+                        {
+                            _logger?.LogDebug("All .cs files found:");
+                            foreach (var file in allCsFiles.Take(20)) // Log first 20 files
+                            {
+                                var relativePath = file.Replace(extractTo, "").TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                                var fileSize = new FileInfo(file).Length;
+                                _logger?.LogDebug("  - {File} ({Size} bytes)", relativePath, fileSize);
+                            }
+                            if (allCsFiles.Length > 20)
+                            {
+                                _logger?.LogDebug("  ... and {More} more files", allCsFiles.Length - 20);
+                            }
+                        }
+                        else
+                        {
+                            _logger?.LogWarning("NO .cs files found in {Path}!", extractTo);
+                            _logger?.LogWarning("This might indicate the solution.zip doesn't contain source code, or extraction failed.");
+                            
+                            // Log what's actually in the directory
+                            _logger?.LogDebug("Directory contents:");
+                            var allFiles = Directory.GetFiles(extractTo, "*.*", SearchOption.AllDirectories).Take(10);
+                            foreach (var f in allFiles)
+                            {
+                                _logger?.LogDebug("  - {File}", f.Replace(extractTo, ""));
+                            }
+                        }
+                        
+                        // Folders to exclude (build output and IDE/config folders)
+                        var excludeFolders = new[] { "bin", "obj", "Debug", "Release", ".vs", "packages", "node_modules", ".git" };
+                        
+                        var csFiles = allCsFiles
+                            .Where(f => {
+                                // Exclude auto-generated files
+                                var fileName = Path.GetFileName(f);
+                                if (fileName.EndsWith(".designer.cs", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    _logger?.LogDebug("  Filtered out (designer): {File}", fileName);
+                                    return false;
+                                }
+                                if (fileName.EndsWith(".g.cs", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    _logger?.LogDebug("  Filtered out (generated): {File}", fileName);
+                                    return false;
+                                }
+                                if (fileName.EndsWith(".g.i.cs", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    _logger?.LogDebug("  Filtered out (generated): {File}", fileName);
+                                    return false;
+                                }
+                                if (fileName.Contains("AssemblyInfo", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    _logger?.LogDebug("  Filtered out (AssemblyInfo): {File}", fileName);
+                                    return false;
+                                }
+                                
+                                // Exclude files in build/config folders - use the full path
+                                var relativePath = f.Replace(extractTo, "").TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                                var pathParts = relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                                
+                                foreach (var excludeFolder in excludeFolders)
+                                {
+                                    if (pathParts.Any(part => part.Equals(excludeFolder, StringComparison.OrdinalIgnoreCase)))
+                                    {
+                                        _logger?.LogDebug("  Filtered out (in {Folder}): {File}", excludeFolder, relativePath);
+                                        return false;
+                                    }
+                                }
+                                
+                                return true;
+                            })
                             .ToArray();
 
-                        _logger?.LogDebug("{Folder} -> found {Count} .cs files (after filtering)", folderName, csFiles.Length);
-
-                        // If no cs files found, still create an empty normalized file
-                        var normalizedText = NormalizeCsFiles(csFiles);
+                        _logger?.LogInformation("{Folder} -> collected {Count} .cs files (after filtering out build/config folders)", folderName, csFiles.Length);
+                        
+                        // Log the files that WILL be normalized
+                        if (csFiles.Length > 0)
+                        {
+                            _logger?.LogInformation("Files to be normalized for {Folder}:", folderName);
+                            foreach (var file in csFiles.Take(10))
+                            {
+                                var relativePath = file.Replace(extractTo, "").TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                                var fileSize = new FileInfo(file).Length;
+                                _logger?.LogInformation("  ✓ {File} ({Size} bytes)", relativePath, fileSize);
+                            }
+                            if (csFiles.Length > 10)
+                            {
+                                _logger?.LogInformation("  ... and {More} more files", csFiles.Length - 10);
+                            }
+                        }
+                        else
+                        {
+                            _logger?.LogError("❌ NO .cs files collected after filtering for {Folder}!", folderName);
+                            _logger?.LogError("   This means all files were filtered out or none were found.");
+                        }
+                        
+                        // Normalize the collected files
+                        var normalizedText = NormalizeCsFiles(csFiles, folderName);
 
                         var outFile = Path.Combine(normalizedOutputDir, folderName + ".txt");
                         await System.IO.File.WriteAllTextAsync(outFile, normalizedText, ct);
@@ -254,17 +350,47 @@ namespace SubmitionsChecker
             return violations.ToList();
         }
 
-        private string NormalizeCsFiles(string[] csFiles)
+        private string NormalizeCsFiles(string[] csFiles, string folderName)
         {
+            if (csFiles.Length == 0)
+            {
+                _logger?.LogWarning("⚠️ No .cs files provided for normalization for {Folder}", folderName);
+                return string.Empty;
+            }
+
+            _logger?.LogInformation("📄 Normalizing {Count} .cs files for {Folder}", csFiles.Length, folderName);
+            
             var combined = string.Empty;
+            int filesProcessed = 0;
+            int totalChars = 0;
+            
             foreach (var file in csFiles)
             {
                 try
                 {
                     var text = File.ReadAllText(file);
+                    if (string.IsNullOrWhiteSpace(text))
+                    {
+                        _logger?.LogDebug("  Skipping empty file: {File}", Path.GetFileName(file));
+                        continue;
+                    }
+
+                    var originalLength = text.Length;
                     text = RemoveComments(text);
                     text = RemoveUsingDirectives(text);
-                    combined += text + "\n";
+                    
+                    if (!string.IsNullOrWhiteSpace(text))
+                    {
+                        combined += text + "\n";
+                        filesProcessed++;
+                        totalChars += text.Length;
+                        _logger?.LogDebug("  ✓ Normalized {File}: {Original} -> {Normalized} chars", 
+                            Path.GetFileName(file), originalLength, text.Length);
+                    }
+                    else
+                    {
+                        _logger?.LogWarning("  ⚠️ File became empty after removing comments/usings: {File}", Path.GetFileName(file));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -273,10 +399,26 @@ namespace SubmitionsChecker
                 }
             }
 
-            // Lowercase and collapse whitespace
+            _logger?.LogInformation("✅ {Folder}: Normalized {Processed}/{Total} files, total: {Chars} chars before final processing", 
+                folderName, filesProcessed, csFiles.Length, totalChars);
+
+            if (string.IsNullOrWhiteSpace(combined))
+            {
+                _logger?.LogError("❌ {Folder}: Normalization produced EMPTY output from {Count} files!", folderName, csFiles.Length);
+                return string.Empty;
+            }
+
+            // Lowercase and collapse whitespace - BUT keep newlines for better structure
             var lower = combined.ToLowerInvariant();
-            var collapsed = Regex.Replace(lower, "\\s+", " ");
-            return collapsed.Trim();
+            // Replace multiple spaces/tabs with single space, but preserve newlines
+            var collapsed = Regex.Replace(lower, @"[ \t]+", " ");
+            // Remove excessive newlines (more than 2 consecutive)
+            collapsed = Regex.Replace(collapsed, @"\n{3,}", "\n\n");
+            
+            var result = collapsed.Trim();
+            _logger?.LogInformation("✅ {Folder}: Final normalized text: {Length} chars", folderName, result.Length);
+            
+            return result;
         }
 
         private string RemoveUsingDirectives(string text) => Regex.Replace(text, @"^\s*using\s+[^\r\n;]+;", "", RegexOptions.Multiline);
@@ -288,6 +430,33 @@ namespace SubmitionsChecker
             // Remove line comments
             text = Regex.Replace(text, @"//.*", string.Empty);
             return text;
+        }
+
+        private void LogDirectoryTree(string path, int indent, int maxDepth)
+        {
+            if (indent > maxDepth) return;
+
+            try
+            {
+                var dirInfo = new DirectoryInfo(path);
+                var files = dirInfo.GetFiles();
+                var directories = dirInfo.GetDirectories();
+
+                foreach (var file in files)
+                {
+                    _logger?.LogDebug("{Indent}File: {FileName}", new string(' ', indent * 2), file.Name);
+                }
+
+                foreach (var subDir in directories)
+                {
+                    _logger?.LogDebug("{Indent}Dir: {DirName}", new string(' ', indent * 2), subDir.Name);
+                    LogDirectoryTree(subDir.FullName, indent + 1, maxDepth);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogWarning(ex, "Failed to log directory tree at {Path}", path);
+            }
         }
     }
 }

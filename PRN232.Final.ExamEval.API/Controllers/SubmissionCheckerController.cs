@@ -16,15 +16,18 @@ namespace PRN232.Final.ExamEval.API.Controllers
         private readonly SubmissionProcessor _processor;
         private readonly ILogger<SubmissionCheckerController> _logger;
         private readonly IProgressTrackerService _progressTracker;
+        private readonly ILoggerFactory _loggerFactory;
 
         public SubmissionCheckerController(
             SubmissionProcessor processor, 
             ILogger<SubmissionCheckerController> logger,
-            IProgressTrackerService progressTracker)
+            IProgressTrackerService progressTracker,
+            ILoggerFactory loggerFactory)
         {
             _processor = processor;
             _logger = logger;
             _progressTracker = progressTracker;
+            _loggerFactory = loggerFactory;
         }
 
         /// <summary>
@@ -98,7 +101,7 @@ namespace PRN232.Final.ExamEval.API.Controllers
                             var entry = reader.Entry;
                             if (!entry.IsDirectory)
                             {
-                                var outPath = Path.Combine(extractedRootDir, entry.Key);
+                                var outPath = Path.Combine(extractedRootDir, entry.Key ?? "");
                                 var dir = Path.GetDirectoryName(outPath);
                                 if (!string.IsNullOrEmpty(dir))
                                     Directory.CreateDirectory(dir);
@@ -109,7 +112,7 @@ namespace PRN232.Final.ExamEval.API.Controllers
                             }
                             else
                             {
-                                var dirPath = Path.Combine(extractedRootDir, entry.Key);
+                                var dirPath = Path.Combine(extractedRootDir, entry.Key ?? "");
                                 Directory.CreateDirectory(dirPath);
                             }
                         }
@@ -257,6 +260,116 @@ namespace PRN232.Final.ExamEval.API.Controllers
                     var warningCount = studentReports.Count(s => ((dynamic)s).Status.Contains("WARNING"));
                     var failedCount = studentReports.Count(s => ((dynamic)s).Status.Contains("FAILED"));
 
+                    // Run plagiarism detection WITH HISTORY (cross-submission comparison)
+                    _logger.LogInformation("Starting CROSS-SUBMISSION plagiarism detection for {Count} students", allStudentDirs.Count);
+                    
+                    // Use global history storage path
+                    var historyStoragePath = Path.Combine(AppContext.BaseDirectory, "PlagiarismHistory");
+                    
+                    // Create proper logger using factory
+                    var plagDetectorLogger = _loggerFactory.CreateLogger<StyleBasedPlagiarismDetector>();
+                    var plagiarismDetector = new StyleBasedPlagiarismDetector(plagDetectorLogger);
+                    
+                    _logger.LogInformation("📍 Root directory for plagiarism check: {Root}", Path.GetDirectoryName(normalizedOut));
+                    
+                    // Use the new method that compares with ALL previous submissions
+                    var plagiarismResults = await plagiarismDetector.DetectPlagiarismWithHistoryAsync(
+                        normalizedOut, 
+                        historyStoragePath,
+                        folderId, // Use folderId as submission ID
+                        CancellationToken.None);
+                    
+                    // Generate plagiarism report
+                    var plagiarismReportPath = Path.Combine(extractedRootDir, "plagiarism_report.txt");
+                    await plagiarismDetector.GeneratePlagiarismReportAsync(plagiarismResults, plagiarismReportPath);
+                    
+                    // Create plagiarism lookup by student
+                    var plagiarismByStudent = new Dictionary<string, List<PlagiarismResult>>();
+                    foreach (var result in plagiarismResults)
+                    {
+                        if (!plagiarismByStudent.ContainsKey(result.Student1))
+                            plagiarismByStudent[result.Student1] = new List<PlagiarismResult>();
+                        if (!plagiarismByStudent.ContainsKey(result.Student2))
+                            plagiarismByStudent[result.Student2] = new List<PlagiarismResult>();
+                        
+                        plagiarismByStudent[result.Student1].Add(result);
+                        plagiarismByStudent[result.Student2].Add(result);
+                    }
+
+                    // Add plagiarism info to each student report
+                    for (int i = 0; i < studentReports.Count; i++)
+                    {
+                        var studentReport = (dynamic)studentReports[i];
+                        var studentName = (string)studentReport.StudentId;
+                        
+                        if (plagiarismByStudent.ContainsKey(studentName))
+                        {
+                            var plagiarismMatches = plagiarismByStudent[studentName];
+                            var suspiciousGroups = plagiarismMatches
+                                .Select((Func<PlagiarismResult, string>)(p => p.Student1 == studentName ? p.Student2 : p.Student1))
+                                .Distinct()
+                                .ToList();
+                            
+                            var maxSimilarity = plagiarismMatches.Max((Func<PlagiarismResult, double>)(p => p.SimilarityScore));
+                            
+                            studentReports[i] = new
+                            {
+                                studentReport.StudentId,
+                                studentReport.Status,
+                                studentReport.HasNormalizedFile,
+                                studentReport.NormalizedFilePath,
+                                studentReport.IssueCount,
+                                studentReport.Issues,
+                                PlagiarismDetected = true,
+                                PlagiarismSimilarityMax = maxSimilarity,
+                                SuspiciousGroupMembers = suspiciousGroups,
+                                PlagiarismDetails = plagiarismMatches.Select((Func<PlagiarismResult, object>)(pm => new
+                                {
+                                    SimilarWithStudent = pm.Student1 == studentName ? pm.Student2 : pm.Student1,
+                                    SimilarityScore = pm.SimilarityScore,
+                                    Analysis = pm.Analysis
+                                })).ToArray()
+                            };
+                        }
+                        else
+                        {
+                            studentReports[i] = new
+                            {
+                                studentReport.StudentId,
+                                studentReport.Status,
+                                studentReport.HasNormalizedFile,
+                                studentReport.NormalizedFilePath,
+                                studentReport.IssueCount,
+                                studentReport.Issues,
+                                PlagiarismDetected = false,
+                                PlagiarismSimilarityMax = (double?)null,
+                                SuspiciousGroupMembers = new List<string>(),
+                                PlagiarismDetails = Array.Empty<object>()
+                            };
+                        }
+                    }
+
+                    // Save plagiarism results as JSON
+                    var plagiarismJsonPath = Path.Combine(extractedRootDir, "plagiarism_results.json");
+                    var plagiarismJson = JsonSerializer.Serialize(new 
+                    {
+                        totalPairs = (allStudentDirs.Count * (allStudentDirs.Count - 1)) / 2,
+                        suspiciousPairs = plagiarismResults.Count,
+                        detectionMethod = "Style-Based (Variables & Namespaces)",
+                        results = plagiarismResults.Select(r => new
+                        {
+                            student1 = r.Student1,
+                            student2 = r.Student2,
+                            similarityScore = r.SimilarityScore,
+                            analysis = r.Analysis,
+                            isSuspicious = r.IsSuspicious,
+                            commonPatterns = r.CommonPatterns
+                        }).ToArray()
+                    }, new JsonSerializerOptions { WriteIndented = true });
+                    await System.IO.File.WriteAllTextAsync(plagiarismJsonPath, plagiarismJson);
+                    
+                    _logger.LogInformation("Plagiarism detection completed. Found {Count} suspicious pairs", plagiarismResults.Count);
+
                     var report = new
                     {
                         timestamp = timestamp,
@@ -271,9 +384,18 @@ namespace PRN232.Final.ExamEval.API.Controllers
                             failed = failedCount,
                             successRate = studentReports.Count > 0 
                                 ? Math.Round((passedCount * 100.0) / studentReports.Count, 2) 
-                                : 0
+                                : 0,
+                            plagiarismDetected = plagiarismResults.Count,
+                            studentsWithPlagiarism = plagiarismByStudent.Count
                         },
-                        students = studentReports
+                        students = studentReports,
+                        downloadLinks = new
+                        {
+                            plagiarismReportTxt = $"/api/submissions/download/{folderId}/plagiarism_report.txt",
+                            plagiarismResultsJson = $"/api/submissions/download/{folderId}/plagiarism_results.json",
+                            fullReportJson = $"/api/submissions/report/{folderId}",
+                            allStudentsCombined = $"/api/submissions/download/{folderId}/all_students_combined.txt"
+                        }
                     };
 
                     var reportPath = Path.Combine(extractedRootDir, "report.json");
@@ -297,6 +419,67 @@ namespace PRN232.Final.ExamEval.API.Controllers
                 message = "Upload accepted. Processing started.",
                 signalRHub = "/hubs/progress" 
             });
+        }
+
+        /// <summary>
+        /// Create a combined file containing all students' code for plagiarism checking
+        /// </summary>
+        private async Task CreateCombinedCodeFile(string extractedRootDir, string normalizedOut, List<string> studentNames)
+        {
+            try
+            {
+                var combinedFilePath = Path.Combine(extractedRootDir, "all_students_combined.txt");
+                var separatorLine = new string('=', 80);
+                
+                using var writer = new StreamWriter(combinedFilePath, false, System.Text.Encoding.UTF8);
+                
+                await writer.WriteLineAsync($"COMBINED CODE FILE FOR PLAGIARISM DETECTION");
+                await writer.WriteLineAsync($"Generated: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC");
+                await writer.WriteLineAsync($"Total Students: {studentNames.Count}");
+                await writer.WriteLineAsync(separatorLine);
+                await writer.WriteLineAsync();
+
+                foreach (var studentName in studentNames.OrderBy(s => s))
+                {
+                    var normalizedFile = Path.Combine(normalizedOut, studentName + ".txt");
+                    
+                    if (System.IO.File.Exists(normalizedFile))
+                    {
+                        await writer.WriteLineAsync();
+                        await writer.WriteLineAsync(separatorLine);
+                        await writer.WriteLineAsync($"STUDENT: {studentName}");
+                        await writer.WriteLineAsync(separatorLine);
+                        await writer.WriteLineAsync();
+                        
+                        var content = await System.IO.File.ReadAllTextAsync(normalizedFile);
+                        await writer.WriteLineAsync(content);
+                        
+                        await writer.WriteLineAsync();
+                        await writer.WriteLineAsync($"END OF {studentName}");
+                        await writer.WriteLineAsync();
+                    }
+                    else
+                    {
+                        await writer.WriteLineAsync();
+                        await writer.WriteLineAsync(separatorLine);
+                        await writer.WriteLineAsync($"STUDENT: {studentName}");
+                        await writer.WriteLineAsync($"STATUS: NO CODE FILE (Missing or Failed)");
+                        await writer.WriteLineAsync(separatorLine);
+                        await writer.WriteLineAsync();
+                    }
+                }
+
+                await writer.WriteLineAsync();
+                await writer.WriteLineAsync(separatorLine);
+                await writer.WriteLineAsync("END OF COMBINED FILE");
+                await writer.WriteLineAsync(separatorLine);
+
+                _logger.LogInformation("Created combined code file at {Path}", combinedFilePath);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create combined code file");
+            }
         }
 
         /// <summary>
@@ -377,6 +560,111 @@ namespace PRN232.Final.ExamEval.API.Controllers
 
             var reportContent = await System.IO.File.ReadAllTextAsync(reportPath);
             return Content(reportContent, "application/json");
+        }
+
+        /// <summary>
+        /// Download generated files (plagiarism reports, combined code, etc.)
+        /// </summary>
+        [HttpGet("download/{folderId}/{fileName}")]
+        public IActionResult DownloadFile(string folderId, string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(folderId) || string.IsNullOrWhiteSpace(fileName))
+                return BadRequest("folderId and fileName are required");
+
+            // Security: only allow specific file names
+            var allowedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "plagiarism_report.txt",
+                "plagiarism_results.json",
+                "all_students_combined.txt",
+                "report.json"
+            };
+
+            if (!allowedFiles.Contains(fileName))
+                return BadRequest("Invalid file name");
+
+            var baseRoot = Path.Combine(AppContext.BaseDirectory, "SubmissionPipeline");
+            var extractedRootDir = Path.Combine(baseRoot, folderId);
+            var filePath = Path.Combine(extractedRootDir, fileName);
+
+            if (!System.IO.File.Exists(filePath))
+                return NotFound(new { error = "File not found", fileName });
+
+            var contentType = fileName.EndsWith(".json") ? "application/json" : "text/plain";
+            var fileBytes = System.IO.File.ReadAllBytes(filePath);
+
+            return File(fileBytes, contentType, fileName);
+        }
+
+        /// <summary>
+        /// Get plagiarism history summary - shows all submissions and students in history
+        /// </summary>
+        [HttpGet("plagiarism/history")]
+        public async Task<IActionResult> GetPlagiarismHistory()
+        {
+            try
+            {
+                var historyStoragePath = Path.Combine(AppContext.BaseDirectory, "PlagiarismHistory");
+                var historyManager = new PlagiarismHistoryManager(historyStoragePath, null);
+                
+                var summary = await historyManager.GetHistorySummaryAsync();
+                var allStudents = await historyManager.GetAllStudentIdsAsync();
+
+                return Ok(new
+                {
+                    totalSubmissions = summary.TotalSubmissions,
+                    totalStudents = summary.TotalStudents,
+                    lastUpdated = summary.LastUpdated,
+                    allStudentIds = allStudents.OrderBy(s => s).ToList(),
+                    submissions = summary.Submissions.OrderByDescending(s => s.Timestamp).Select(s => new
+                    {
+                        s.SubmissionId,
+                        s.Timestamp,
+                        s.StudentCount,
+                        students = s.StudentIds.OrderBy(id => id).ToList()
+                    }).ToList(),
+                    message = $"History contains {summary.TotalSubmissions} submissions with {summary.TotalStudents} unique students. All future submissions will be compared against these."
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get plagiarism history");
+                return StatusCode(500, new { error = "Failed to retrieve plagiarism history", details = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Clear all plagiarism history (USE WITH CAUTION!)
+        /// This will delete all stored student codes and reset the detection system
+        /// </summary>
+        [HttpDelete("plagiarism/history")]
+        public async Task<IActionResult> ClearPlagiarismHistory()
+        {
+            try
+            {
+                var historyStoragePath = Path.Combine(AppContext.BaseDirectory, "PlagiarismHistory");
+                var historyManager = new PlagiarismHistoryManager(historyStoragePath, _logger as ILogger<PlagiarismHistoryManager>);
+                
+                var beforeSummary = await historyManager.GetHistorySummaryAsync();
+                
+                await historyManager.ClearHistoryAsync();
+                
+                _logger.LogWarning("⚠️ Plagiarism history cleared! Deleted {Submissions} submissions with {Students} students", 
+                    beforeSummary.TotalSubmissions, beforeSummary.TotalStudents);
+
+                return Ok(new
+                {
+                    message = "Plagiarism history cleared successfully",
+                    deletedSubmissions = beforeSummary.TotalSubmissions,
+                    deletedStudents = beforeSummary.TotalStudents,
+                    warning = "All stored student codes have been deleted. Future plagiarism checks will start fresh."
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to clear plagiarism history");
+                return StatusCode(500, new { error = "Failed to clear plagiarism history", details = ex.Message });
+            }
         }
     }
 }
