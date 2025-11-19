@@ -3,10 +3,141 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:PRN232.Final.ExamEval.FE"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="Exam Submission Tracker"
+        Height="600" Width="900"
+        Loaded="Window_Loaded">
 
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Upload + status -->
+            <RowDefinition Height="Auto"/>
+            <!-- Queue / Progress -->
+            <RowDefinition Height="*"/>
+            <!-- Students table -->
+            <RowDefinition Height="Auto"/>
+            <!-- Summary -->
+            <RowDefinition Height="150"/>
+            <!-- Logs -->
+        </Grid.RowDefinitions>
+
+        <!-- Row 0: Upload + connection status -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,10">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center" >
+                <Button x:Name="btnChooseFile"
+                        Content="Choose file (.zip/.rar)"
+                        Width="180" Height="30"
+                        Margin="0,0,10,0"
+                        Click="btnChooseFile_Click"/>
+
+                <TextBlock x:Name="txtSelectedFile"
+                           VerticalAlignment="Center"
+                           Text="No file selected"
+                           TextTrimming="CharacterEllipsis"
+                           Width="350"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal"
+                        DockPanel.Dock="Right"
+                        VerticalAlignment="Center">
+                <TextBlock Text="Connection: "
+                           VerticalAlignment="Center"/>
+                <TextBlock x:Name="txtConnectionStatus"
+                           VerticalAlignment="Center"
+                           FontWeight="Bold"
+                           Foreground="Red"
+                           Text="Disconnected"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Row 1: Upload button + queue + progress -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,10">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Button x:Name="btnUpload"
+                        Content="Upload  Process"
+                        Width="150" Height="30"
+                        Margin="0,0,10,0"
+                        IsEnabled="False"
+                        Click="btnUpload_Click"/>
+
+                <TextBlock x:Name="txtQueueInfo"
+                           VerticalAlignment="Center"
+                           Foreground="Goldenrod"
+                           Visibility="Collapsed"
+                           Text="Job queued..."/>
+            </StackPanel>
+
+            <!-- Progress -->
+            <GroupBox Header="Progress" Margin="0,10,0,0">
+                <StackPanel Margin="5">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5" HorizontalAlignment="Stretch">
+                        <ProgressBar x:Name="pbOverall"
+                                     Height="20"
+                                     Minimum="0" Maximum="100"
+                                     Width="300"/>
+                        <TextBlock x:Name="txtProgressPercent"
+                                   Margin="10,0,0,0"
+                                   VerticalAlignment="Center"
+                                   Text="0 %"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0" HorizontalAlignment="Left" >
+                        <TextBlock Text="Total: "/>
+                        <TextBlock x:Name="txtTotal" FontWeight="Bold" Text="0" Margin="0,0,15,0"/>
+                        <TextBlock Text="Completed: "/>
+                        <TextBlock x:Name="txtCompleted" FontWeight="Bold" Text="0" Margin="0,0,15,0"/>
+                        <TextBlock Text="Failed: "/>
+                        <TextBlock x:Name="txtFailed" FontWeight="Bold" Text="0" Margin="0,0,15,0"/>
+                        <TextBlock Text="Status: "/>
+                        <TextBlock x:Name="txtStatus"
+                                   FontWeight="Bold"
+                                   Foreground="Blue"
+                                   Text="Idle"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                        <TextBlock Text="Current student: "/>
+                        <TextBlock x:Name="txtCurrentStudent" FontWeight="Bold" Text="-" />
+                    </StackPanel>
+                </StackPanel>
+            </GroupBox>
+        </StackPanel>
+
+        <!-- Row 2: Students DataGrid -->
+        <GroupBox Grid.Row="2" Header="Students status">
+            <DataGrid x:Name="dgStudents"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      IsReadOnly="True"
+                      Margin="5">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Student ID" Binding="{Binding StudentId}" Width="*"/>
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
+                    <DataGridTextColumn Header="Started" Binding="{Binding Started}" Width="120"/>
+                    <DataGridTextColumn Header="Completed" Binding="{Binding Completed}" Width="120"/>
+                    <DataGridTextColumn Header="Violations" Binding="{Binding Violations}" Width="2*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </GroupBox>
+
+        <!-- Row 3: Summary -->
+        <GroupBox Grid.Row="3" Header="Summary" Margin="0,10,0,10">
+            <StackPanel Orientation="Horizontal" Margin="5">
+                <TextBlock Text="Passed: "/>
+                <TextBlock x:Name="txtSummaryPassed" FontWeight="Bold" Text="0" Margin="0,0,20,0"/>
+                <TextBlock Text="Warning: "/>
+                <TextBlock x:Name="txtSummaryWarning" FontWeight="Bold" Text="0" Margin="0,0,20,0"/>
+                <TextBlock Text="Failed: "/>
+                <TextBlock x:Name="txtSummaryFailed" FontWeight="Bold" Text="0" Margin="0,0,20,0"/>
+                <TextBlock Text="Success rate: "/>
+                <TextBlock x:Name="txtSummaryRate" FontWeight="Bold" Text="0%" />
+            </StackPanel>
+        </GroupBox>
+
+        <!-- Row 4: Logs -->
+        <GroupBox Grid.Row="4" Header="Logs">
+            <ListBox x:Name="lstLogs" Margin="5"/>
+        </GroupBox>
     </Grid>
 </Window>

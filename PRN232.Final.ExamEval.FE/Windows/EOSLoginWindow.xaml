@@ -1,0 +1,73 @@
+﻿<Window x:Class="PRN232.Final.ExamEval.FE.Windows.EOSLoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PRN232.Final.ExamEval.FE.Windows"
+        mc:Ignorable="d"
+        Title="EOS Login Form"
+        WindowStartupLocation="CenterScreen"
+        Height="300" Width="420"
+        ResizeMode="NoResize">
+
+    <Grid Background="White" Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Title -->
+            <RowDefinition Height="20"/>
+            <!-- Space -->
+            <RowDefinition Height="Auto"/>
+            <!-- Email -->
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <!-- Password -->
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="Auto"/>
+            <!-- Buttons -->
+        </Grid.RowDefinitions>
+
+        <!-- TITLE -->
+        <TextBlock Text="Login to Exam System"
+                   FontSize="18"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   Grid.Row="0"/>
+
+        <!-- EMAIL LABEL + INPUT -->
+        <StackPanel Grid.Row="2" Orientation="Vertical">
+            <TextBlock Text="Email:" Margin="0,0,0,5"/>
+            <TextBox x:Name="txtEmail"
+                 Height="30"
+                 Margin="0"
+                 HorizontalAlignment="Stretch"
+                 VerticalContentAlignment="Center"
+                     Padding="5,0,0,0"/>
+        </StackPanel>
+
+        <!-- PASSWORD LABEL + INPUT -->
+        <StackPanel Grid.Row="4" Orientation="Vertical">
+            <TextBlock Text="Password:" Margin="0,0,0,5"/>
+            <PasswordBox x:Name="txtPassword"
+                 Height="30"
+                 HorizontalAlignment="Stretch"
+                 VerticalContentAlignment="Center"
+                         Padding="5,0,0,0"/>
+        </StackPanel>
+
+        <!-- BUTTONS (CENTERED) -->
+        <StackPanel Grid.Row="6"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+            <Button x:Name="btnLogin"
+                    Content="Login"
+                    Width="100" Margin="10"
+                    Click="BtnLogin_Click"/>
+            <Button x:Name="btnExit"
+                    Content="Exit"
+                    Width="100" Margin="10"
+                    Click="BtnExit_Click"/>
+        </StackPanel>
+
+    </Grid>
+</Window>
