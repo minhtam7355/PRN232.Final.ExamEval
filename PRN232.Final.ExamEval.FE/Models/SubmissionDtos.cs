@@ -56,6 +56,44 @@ namespace PRN232.Final.ExamEval.FE.Models
 
         [JsonProperty("violations")]
         public List<string> Violations { get; set; }
+
+        // NEW
+        [JsonProperty("plagiarismDetected")]
+        public bool PlagiarismDetected { get; set; }
+
+        [JsonProperty("plagiarismSimilarityMax")]
+        public int? PlagiarismSimilarityMax { get; set; }
+
+        [JsonProperty("suspiciousGroupMembers")]
+        public List<string> SuspiciousGroupMembers { get; set; }
+
+        [JsonProperty("plagiarismDetails")]
+        public List<PlagiarismDetail> PlagiarismDetails { get; set; }
+
+        // Issue details for FAIL/WARNING
+        [JsonProperty("issues")]
+        public List<IssueDetail> Issues { get; set; }
+    }
+
+    public class PlagiarismDetail
+    {
+        [JsonProperty("similarWithStudent")]
+        public string SimilarWithStudent { get; set; }
+
+        [JsonProperty("similarityScore")]
+        public int SimilarityScore { get; set; }
+
+        [JsonProperty("analysis")]
+        public string Analysis { get; set; }
+    }
+
+    public class IssueDetail
+    {
+        [JsonProperty("type")]
+        public string Type { get; set; }
+
+        [JsonProperty("description")]
+        public string Description { get; set; }
     }
 
     public class ReportResponse
@@ -86,5 +124,8 @@ namespace PRN232.Final.ExamEval.FE.Models
         public string Started { get; set; }
         public string Completed { get; set; }
         public string Violations { get; set; }
+
+        public string PlagiarismInfo { get; set; }
+        public string IssueDescription { get; set; }
     }
 }

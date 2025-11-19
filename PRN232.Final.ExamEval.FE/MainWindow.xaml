@@ -117,6 +117,13 @@
                     <DataGridTextColumn Header="Started" Binding="{Binding Started}" Width="120"/>
                     <DataGridTextColumn Header="Completed" Binding="{Binding Completed}" Width="120"/>
                     <DataGridTextColumn Header="Violations" Binding="{Binding Violations}" Width="2*"/>
+                    <DataGridTextColumn Header="Plagiarism"
+                    Binding="{Binding PlagiarismInfo}"
+                    Width="2*"/>
+
+                    <DataGridTextColumn Header="Issue Details"
+                    Binding="{Binding IssueDescription}"
+                    Width="3*"/>
                 </DataGrid.Columns>
             </DataGrid>
         </GroupBox>

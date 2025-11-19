@@ -227,13 +227,30 @@ namespace PRN232.Final.ExamEval.FE
                     _students.Add(new StudentRow
                     {
                         StudentId = name,
-                        Status = info.Status.ToUpper(),
+
+                        // STATUS: passed nhưng dính đạo văn
+                        Status = info.PlagiarismDetected
+                ? $"{info.Status} (Plagiarism)"
+                : info.Status,
+
                         Started = info.StartedAt?.ToString("HH:mm:ss") ?? "-",
                         Completed = info.CompletedAt?.ToString("HH:mm:ss") ?? "-",
+
                         Violations = info.Violations != null && info.Violations.Count > 0
-                                    ? $"{info.Violations.Count} issues"
-                                    : "-"
+                    ? string.Join("; ", info.Violations)
+                    : "-",
+
+                        // PLAGIARISM INFO
+                        PlagiarismInfo = info.PlagiarismDetected
+                        ? $"YES - Max Similarity: {info.PlagiarismSimilarityMax}% | With: {string.Join(", ", info.SuspiciousGroupMembers)}"
+                        : "NO",
+
+                        // ISSUE DETAILS WHEN FAILED/WARNING
+                        IssueDescription = info.Issues != null && info.Issues.Count > 0
+                        ? string.Join("\n", info.Issues.Select(i => $"{i.Type}: {i.Description}"))
+                        : "-"
                     });
+                    ;
                 }
             }
 
@@ -242,12 +259,60 @@ namespace PRN232.Final.ExamEval.FE
             {
                 Log("Processing completed");
                 _ = LoadSummaryAsync();
+                _ = LoadFullReportAsync();
             }
             else if (p.Status == "failed")
             {
                 Log("Processing failed");
             }
         }
+
+        private async Task LoadFullReportAsync()
+        {
+            try
+            {
+                using var client = new HttpClient();
+
+                var json = await client.GetStringAsync(
+                    $"{ApiBaseUrl}/api/submissions/report/{_currentFolderId}");
+
+                var result = JsonConvert.DeserializeObject<FullReport>(json);
+
+                // update students table by full final data
+                _students.Clear();
+
+                foreach (var stu in result.Students)
+                {
+                    _students.Add(new StudentRow
+                    {
+                        StudentId = stu.StudentId,
+                        Status = stu.PlagiarismDetected
+                                ? $"{stu.Status} (Plagiarism)"
+                                : stu.Status,
+
+                        Started = stu.StartedAt?.ToString("HH:mm:ss") ?? "-",
+                        Completed = stu.CompletedAt?.ToString("HH:mm:ss") ?? "-",
+
+                        Violations = stu.IssueCount > 0
+                                ? $"{stu.IssueCount} issues"
+                                : "-",
+
+                        PlagiarismInfo = stu.PlagiarismDetected
+                                ? $"YES - Max {stu.PlagiarismSimilarityMax}% | With: {String.Join(", ", stu.SuspiciousGroupMembers)}"
+                                : "NO",
+
+                        IssueDescription = stu.Issues != null && stu.Issues.Count > 0
+                                ? String.Join("\n", stu.Issues.Select(i => $"{i.Type}: {i.Description}"))
+                                : "-"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Log("Error loading final report: " + ex.Message);
+            }
+        }
+
 
         private async Task LoadSummaryAsync()
         {
